@@ -1,2 +1,2 @@
-# deep_learning_task
+# deep_learning_tasks
 single layer perceptron
