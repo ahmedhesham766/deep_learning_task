@@ -1,176 +1,137 @@
-import array as arr
-import pandas as pd
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
-from sklearn.model_selection import train_test_split
 
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-
-def sigmoid_derv(x):
-    sig = sigmoid(x)
-    return sig * (1 - sig)
-
-
-# preprocessing
 dataset = pd.read_csv('penguins.csv')
+# preprocessing
+dataset[dataset.columns[0]] = pd.Categorical(
+    dataset[dataset.columns[0]],
+    categories=['Adelie', 'Gentoo', 'Chinstrap']
+).codes
 
-dataset[dataset.columns[0]] = pd.Categorical(dataset[dataset.columns[0]], categories=['Adelie', 'Gentoo', 'Chinstrap']).codes
-types = [dataset[0:50].copy(), dataset[50:100].copy(), dataset[100:150].copy()]
+dataset[dataset.columns[1]].fillna(inplace=True, value=dataset[dataset.columns[1]].mean())
+dataset[dataset.columns[2]].fillna(inplace=True, value=dataset[dataset.columns[2]].mean())
+dataset[dataset.columns[3]].fillna(inplace=True, value=dataset[dataset.columns[3]].mean())
+dataset[dataset.columns[5]].fillna(inplace=True, value=dataset[dataset.columns[5]].mean())
+# gender below the only nominal feature
+dataset[dataset.columns[4]].fillna(inplace=True, value='unknown')
+dataset[dataset.columns[4]] = pd.Categorical(dataset[dataset.columns[4]], categories=['unknown', 'male', 'female']).codes
 
-del dataset
+Train_Data = pd.concat([dataset[0:30], dataset[50:80], dataset[100:130]])
+Test_Data = pd.concat([dataset[30:50], dataset[80:100], dataset[130:150]])
 
-X_Train = []
-Y_Train = []
-X_Test = []
-Y_Test = []
+Train_Data = Train_Data.sample(frac=1, random_state=1).reset_index(drop=True)
+Test_Data = Test_Data.sample(frac=1, random_state=1).reset_index(drop=True)
 
-# preprocessing each one of the species alone and generating train and test data for every specie
-for data in types:
-    data[data.columns[1]].fillna(inplace=True, value=data[data.columns[1]].mean())
-    data[data.columns[2]].fillna(inplace=True, value=data[data.columns[2]].mean())
-    data[data.columns[3]].fillna(inplace=True, value=data[data.columns[3]].mean())
-    data[data.columns[5]].fillna(inplace=True, value=data[data.columns[5]].mean())
-    # gender below the only nominal feature
-    data[data.columns[4]].fillna(inplace=True, value='unknown')
-    data[data.columns[4]] = pd.Categorical(data[data.columns[4]], categories=['unknown', 'male', 'female']).codes
-    x = data[data.columns[1:6]]
-    y = data[data.columns[0]]
+X_Train: pd.DataFrame = Train_Data[Train_Data.columns[1:6]]
+X_Test: pd.DataFrame = Test_Data[Test_Data.columns[1:6]]
+Y_Train: pd.DataFrame = Train_Data[Train_Data.columns[0]]
+Y_Test: pd.DataFrame = Test_Data[Test_Data.columns[0]]
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.4, random_state=0)
-    X_Train.append(x_train)
-    X_Test.append(x_test)
-    Y_Train.append(y_train)
-    Y_Test.append(y_test)
-
-# concatenating the train and test data together
-X_Train = pd.concat([X_Train[0], X_Train[1], X_Train[2]])
-X_Test = pd.concat([X_Test[0], X_Test[1], X_Test[2]])
-Y_Train = pd.concat([Y_Train[0], Y_Train[1], Y_Train[2]])
-Y_Test = pd.concat([Y_Test[0], Y_Test[1], Y_Test[2]])
-
-# randomly shuffling the train and test data
-X_Train = X_Train.sample(frac=1, random_state=1).reset_index()
-X_Test = X_Test.sample(frac=1, random_state=1).reset_index()
-Y_Train = Y_Train.sample(frac=1, random_state=1).reset_index()
-Y_Test = Y_Test.sample(frac=1, random_state=1).reset_index()
-
-# print(X_Train)
-# print("____________________________")
-# print(X_Test)
-# print("____________________________")
-# print(Y_Train)
-# print("____________________________")
-# print(Y_Test)
-# ---------------------------------------------------------------------------------- #
+del dataset, Train_Data, Test_Data
 
 
 class Perceptron:
 
     # initialize perceptron
-    def __init__(self, features, epochs, x_train_data, x_test_data, y_train_data, y_test_data, eta, num_training, num_testing):
-        self.features = features  # number of input features
-        self.bias = np.random.randn()  # bias
+    def __init__(self, features, epochs, x_train_data: pd.DataFrame, x_test_data: pd.DataFrame,
+                 y_train_data: pd.DataFrame, y_test_data: pd.DataFrame, eta):
+        self.features = features  # input features
         self.epochs = epochs  # number of epochs
         self.eta = eta  # learning rate
-        self.lost = np.zeros(num_training)  # error difference between predicted value and generated value
-        self.mse = np.zeros(self.epochs)  # mean squared error for plotting the graph
-        self.weight = np.random.rand(features)  # initial weight
-        self.num_training = num_training  # number of training samples
-        self.num_testing = num_testing  # number of testing samples
-        self.error_points = 0  # to keep track of the total testing error
+        # self.lost = np.zeros(num_training)  # error difference between predicted value and generated value
+        # self.mse = np.zeros(self.epochs)  # mean squared error for plotting the graph
+        self.weight = np.zeros(len(features) + 1)  # initial weight
 
-        self.x_train_data = x_train_data
-        self.x_test_data = x_test_data
-
+        x0 = pd.DataFrame(np.ones(len(x_train_data)), columns=['bias'])
+        self.x_train_data = pd.concat([x0, x_train_data], axis=1)
+        x0 = pd.DataFrame(np.ones(len(x_test_data)), columns=['bias'])
+        self.x_test_data = pd.concat([x0, x_test_data], axis=1)
+        del x0
         self.y_train_data = y_train_data
         self.y_test_data = y_test_data
 
     def activation_func(self, x):
-        y = np.transpose(self.weight).dot(x) + self.bias
-        # sigmoid function
-        y = 1 / (1 + np.exp(-y))
-
-        if y == 1:
-            return 1
-        elif y < 1:
-            return 0
+        y = np.transpose(self.weight).dot(x)
+        if y < 0:
+            return -1
         else:
-            return 2
+            return 1
 
-    def fit(self):  # learn through the number of training samples
-
+    def train(self):  # learn through the number of training samples
         for j in range(self.epochs):
+            fails = 0
+            for i in range(len(self.x_train_data)):
 
-            for i in range(self.num_training):
-                # fetch data
-                x = self.x_train_data.iloc[i, 1:self.features]
-
-                # fetch desired output from dataset
-                t = self.y_train_data.iloc[i]
-
-                # activation function
+                x = self.x_train_data.values[i]
                 y = self.activation_func(x)
+                t = self.y_train_data.values[i]
 
                 # calculate difference
-                self.lost[i] = t - y
+                loss = t - y
 
-                # new weight
-                new_weight = self.weight + x.dot(self.lost[i] * self.eta)
+                if loss == 0:
+                    pass
+                else:
+                    fails += 1
+                    self.weight = self.weight + (np.transpose(x).dot(loss).dot(self.eta))
+            # # calculate mean squared error for each epoch
+            print('epoch ' + str(j) + ', fails = ' + str(fails) + ': MSE = ' + str(fails/len(self.x_train_data)))
 
-                # at any point if the weights are similar, then skip to the next epoch
-                if y != t:
-                    break
+        # training_accuracy = 100 - ((self.lost[self.num_training - 1] / self.num_training) * 100)
+        # print(f'Total samples trained: {self.num_training}')
+        # print(f'Training accuracy: {training_accuracy}%')
+        # print(f'Total epochs: {self.epochs}')
 
-                # otherwise, set the new weight as current weight
-                self.weight = new_weight
+    def plot(self):
+        c1 = pd.DataFrame(columns=[x_train_data.columns])
+        c2 = pd.DataFrame(columns=[x_train_data.columns])
+        c3 = pd.DataFrame(columns=[x_train_data.columns])
 
-            # calculate mean squared error for each epoch
-            self.mse[j] = np.square(self.lost).mean()
-
-        training_accuracy = 100 - ((self.lost[self.num_training - 1] / self.num_training) * 100)
-        print(f'Total samples trained: {self.num_training}')
-        print(f'Training accuracy: {training_accuracy}%')
-        print(f'Total epochs: {self.epochs}')
-
-    def plot_fit(self):
-        plt.xlabel('Epochs')
-        plt.ylabel('Mean squared error (mse)')
-        plt.title('Training accuracy')
-        plt.plot(self.mse)
+        for i in range(len(self.y_train_data)):
+            x = self.x_train_data.iloc[i]
+            if self.y_train_data.values[i] == 0:
+                c1.loc[len(c1)] = [x[1], x[2]]
+            elif self.y_train_data.values[i] == 1:
+                c2.loc[len(c2)] = [x[1], x[2]]
+            elif self.y_train_data.values[i] == 2:
+                c3.loc[len(c3)] = [x[1], x[2]]
+            else:
+                print('false')
+        plt.figure('fig')
+        plt.scatter(c1[c1.columns[0]], c1[c1.columns[1]])
+        plt.scatter(c2[c2.columns[0]], c2[c2.columns[1]])
+        plt.scatter(c3[c3.columns[0]], c3[c3.columns[1]])
+        plt.xlabel(feature[0])
+        plt.ylabel(feature[1])
+        plt.plot()
         plt.show()
 
-    def predict(self):  # predict and calculate testing accuracy
+    # def predict(self):  # predict and calculate testing accuracy
+    #
+    #     for i in range(self.num_testing):
+    #         # fetch data
+    #         x = self.x_test_data[i, 0:self.features]
+    #
+    #         # activation function
+    #         y = self.activation_func(x)
+    #
+    #         # calculate error points
+    #         if y != self.y_test_data[i]:
+    #             self.error_points += 1
+    #
+    #     # calculate testing accuracy
+    #     testing_accuracy = 100 - ((self.error_points / self.num_testing) * 100)
+    #
+    #     print(f'Total samples tested: {self.num_testing}')
+    #     print(f'Total error points: {self.error_points}')
+    #     print(f'Testing accuracy: {testing_accuracy:.2f}%')
 
-        for i in range(self.num_testing):
-            # fetch data
-            x = self.x_test_data[i, 0:self.features]
 
-            # activation function
-            y = self.activation_func(x)
+feature = [X_Test.columns[0], X_Test.columns[1]]
+x_train_data = X_Train[X_Train.columns[[0, 1]]]
+x_test_data = X_Test[X_Test.columns[[0, 1]]]
+per = Perceptron(features=feature, x_train_data=x_train_data, x_test_data=x_test_data, y_train_data=Y_Train, y_test_data=Y_Test, eta=0.1, epochs=1000)
 
-            # calculate error points
-            if y != self.y_test_data[i]:
-                self.error_points += 1
-
-        # calculate testing accuracy
-        testing_accuracy = 100 - ((self.error_points / self.num_testing) * 100)
-
-        print(f'Total samples tested: {self.num_testing}')
-        print(f'Total error points: {self.error_points}')
-        print(f'Testing accuracy: {testing_accuracy:.2f}%')
-
-
-# num_training_class = int(len(dataset) / 3)
-# train_len = int(0.6 * num_training_class)
-# X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.6, random_state=0)
-num_training = X_Train.shape[0]  # number of training data
-num_testing = X_Test.shape[0]  # number of testing data
-epochs = 200  # number of epochs to iterate
-features = X_Train.shape[1]  # number of input neurons
-eta = 0.001  # learning rate
-P = Perceptron(features, epochs, X_Train, X_Test, Y_Train, Y_Test, eta, num_training, num_testing)
-#
-P.fit()
+per.train()
+per.plot()
