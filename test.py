@@ -1,124 +1,58 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from enum import Enum
 
 dataset = pd.read_csv('penguins.csv')
-
+# preprocessing
 dataset[dataset.columns[0]] = pd.Categorical(
     dataset[dataset.columns[0]],
     categories=['Adelie', 'Gentoo', 'Chinstrap']
 ).codes
 
+dataset[dataset.columns[1]].fillna(inplace=True, value=dataset[dataset.columns[1]].mean())
+dataset[dataset.columns[2]].fillna(inplace=True, value=dataset[dataset.columns[2]].mean())
+dataset[dataset.columns[3]].fillna(inplace=True, value=dataset[dataset.columns[3]].mean())
+dataset[dataset.columns[5]].fillna(inplace=True, value=dataset[dataset.columns[5]].mean())
+# gender below the only nominal feature
 dataset[dataset.columns[4]].fillna(inplace=True, value='unknown')
 dataset[dataset.columns[4]] = pd.Categorical(
     dataset[dataset.columns[4]],
     categories=['unknown', 'male', 'female']
 ).codes
 
+Train_Data = pd.concat([dataset[0:30], dataset[50:80], dataset[100:130]])
+Test_Data = pd.concat([dataset[30:50], dataset[80:100], dataset[130:150]])
 
-class Species(Enum):
-    Adelie = 0
-    Gentoo = 1
-    Chinstrap = 2
+Train_Data = Train_Data.sample(frac=1, random_state=1).reset_index(drop=True)
+Test_Data = Test_Data.sample(frac=1, random_state=1).reset_index(drop=True)
 
+X_Train: pd.DataFrame = Train_Data[Train_Data.columns[1:6]]
+X_Test: pd.DataFrame = Test_Data[Test_Data.columns[1:6]]
+Y_Train: pd.DataFrame = Train_Data[Train_Data.columns[0]]
+Y_Test: pd.DataFrame = Test_Data[Test_Data.columns[0]]
 
-class Features(Enum):
-    bill_length_mm = 1
-    bill_depth_mm = 2
-    flipper_length_mm = 3
-    gender = 4
-    body_mass_g = 5
-
-
-# preprocessing
-def preprocess(features: list[Features], goals: list[Species], dataset: pd.DataFrame):
-    # print(features[0])
-    # print(features[1])
-    # print(goals[0])
-    # print(goals[1])
-    data = {'species': dataset['species'].values,
-            features[0].name: dataset[features[0].name].values,
-            features[1].name: dataset[features[1].name].values}
-    data = pd.DataFrame(data=data)
-    # print(data)
-
-    y1 = goals[0].value * 50  # the start index of y1
-    y2 = goals[1].value * 50  # the start index of y1
-    data = pd.concat([data[y1:y1 + 50], data[y2:y2 + 50]])
-
-    del y1, y2
-
-    columns = data.columns.values
-    indices = []
-
-    for i in range(len(columns)):
-        if columns[i] not in [columns[0], features[0].name, features[1].name]:
-            indices.append(i)
-
-    columns = np.delete(columns, indices)
-    data = data[columns]
-
-    del columns, indices
-
-    type1: pd.DataFrame = data[0:50].copy()
-    type2: pd.DataFrame = data[50:100].copy()
-
-    del data
-    # print(type1, '\n-----------------------------\n', type2)
-
-    type1[type1.columns[1]].fillna(inplace=True, value=type1[type1.columns[1]].mean())
-    type1[type1.columns[2]].fillna(inplace=True, value=type1[type1.columns[2]].mean())
-    type1['species'] = 1
-
-    type2[type2.columns[1]].fillna(inplace=True, value=type2[type2.columns[1]].mean())
-    type2[type2.columns[2]].fillna(inplace=True, value=type2[type2.columns[2]].mean())
-    type2['species'] = -1
-
-    # print(type1, '\n--------------\n', type2)
-
-    train_data = pd.concat([type1[0:30], type2[0:30]])
-    test_data = pd.concat([type1[30:50], type2[30:50]])
-
-    del type1, type2
-    # print(train_data, '\n------------\n', test_data)
-
-    train_data = train_data.sample(frac=1, random_state=1).reset_index(drop=True)
-    test_data = test_data.sample(frac=1, random_state=1).reset_index(drop=True)
-
-    # print(train_data, '\n------------\n', test_data)
-
-    y_train: pd.DataFrame = train_data[train_data.columns[0]]
-    x_train: pd.DataFrame = train_data[train_data.columns[1:3]]
-    y_test: pd.DataFrame = test_data[test_data.columns[0]]
-    x_test: pd.DataFrame = test_data[test_data.columns[1:3]]
-
-    del train_data, test_data
-
-    return x_train, y_train, x_test, y_test
+del dataset, Train_Data, Test_Data
 
 
 class Perceptron:
 
     # initialize perceptron without bias
-    def __init__(self, features, goals, epochs, x_train_data: pd.DataFrame, x_test_data: pd.DataFrame,
+    def __init__(self, features, epochs, x_train_data: pd.DataFrame, x_test_data: pd.DataFrame,
                  y_train_data: pd.DataFrame, y_test_data: pd.DataFrame, eta, with_bias: bool):
 
         self.features = features  # input features
-        self.goals = goals  # input classes
         self.epochs = epochs  # number of epochs
         self.eta = eta  # learning rate
-        self.weight = np.zeros(len(features) + 1)
-        x0 = pd.DataFrame(np.zeros(len(x_train_data)), columns=['bias'])
-        self.x_train_data = pd.concat([x0, x_train_data], axis=1)
-        x0 = pd.DataFrame(np.zeros(len(x_test_data)), columns=['bias'])
-        self.x_test_data = pd.concat([x0, x_test_data], axis=1)
-        del x0
-
+        self.weight = np.zeros(len(features) + 1)  # initial weight
         if with_bias:
-            self.x_train_data['bias'] = 1
-            self.x_test_data['bias'] = 1
-
+            x0 = pd.DataFrame(np.ones(len(x_train_data)), columns=['bias'])
+            self.x_train_data = pd.concat([x0, x_train_data], axis=1)
+            x0 = pd.DataFrame(np.ones(len(x_test_data)), columns=['bias'])
+            self.x_test_data = pd.concat([x0, x_test_data], axis=1)
+            del x0
+        else:
+            self.x_train_data = x_train_data
+            self.x_test_data = x_test_data
         self.y_train_data = y_train_data
         self.y_test_data = y_test_data
 
@@ -132,18 +66,24 @@ class Perceptron:
 
     def train(self):  # learn through the number of training samples
         for j in range(self.epochs):
+            fails = 0
             for i in range(len(self.x_train_data)):
+
                 x = self.x_train_data.values[i]
                 y = self.activation_func(x)
                 t = self.y_train_data.values[i]
 
                 # calculate difference
                 loss = t - y
-                # new weight = old weight + (np.transpose(x).dot(loss).dot(self.eta))
-                self.weight = self.weight + np.transpose(x) * loss * self.eta
+
+                if loss == 0:
+                    pass
+                else:
+                    fails += 1
+                    self.weight = self.weight + (np.transpose(x).dot(loss).dot(self.eta))
             # print('epoch ' + str(j) + ', fails = ' + str(fails))
-            # # calculate mean squared error for each epoch
-            # print('epoch ' + str(j) + ': MSE = ' + str(fails / len(self.x_train_data)))
+            # # # calculate mean squared error for each epoch
+            # print('epoch ' + str(j) + ': MSE = ' + str(fails/len(self.x_train_data)))
 
         # training_accuracy = 100 - ((self.lost[self.num_training - 1] / self.num_training) * 100)
         # print(f'Total samples trained: {self.num_training}')
@@ -151,71 +91,58 @@ class Perceptron:
         # print(f'Total epochs: {self.epochs}')
 
     def plot(self):
-        c1 = pd.DataFrame(columns=[self.x_train_data.columns])
-        c2 = pd.DataFrame(columns=[self.x_train_data.columns])
+        c1 = pd.DataFrame(columns=[x_train_data.columns])
+        c2 = pd.DataFrame(columns=[x_train_data.columns])
+        c3 = pd.DataFrame(columns=[x_train_data.columns])
 
         for i in range(len(self.y_train_data)):
             x = self.x_train_data.iloc[i]
-            if self.y_train_data.values[i] == 1:
-                c1.loc[len(c1)] = [x[0], x[1], x[2]]
-            elif self.y_train_data.values[i] == -1:
-                c2.loc[len(c2)] = [x[0], x[1], x[2]]
+            if self.y_train_data.values[i] == 0:
+                c1.loc[len(c1)] = [x[1], x[2]]
+            elif self.y_train_data.values[i] == 1:
+                c2.loc[len(c2)] = [x[1], x[2]]
+            elif self.y_train_data.values[i] == 2:
+                c3.loc[len(c3)] = [x[1], x[2]]
             else:
                 print('false')
         plt.figure('fig')
-        plt.scatter(c1[c1.columns[1]], c1[c1.columns[2]])
-        plt.scatter(c2[c2.columns[1]], c2[c2.columns[2]])
-        plt.xlabel(c1.columns.values[1])
-        plt.ylabel(c1.columns.values[2])
+        plt.scatter(c1[c1.columns[0]], c1[c1.columns[1]])
+        plt.scatter(c2[c2.columns[0]], c2[c2.columns[1]])
+        plt.scatter(c3[c3.columns[0]], c3[c3.columns[1]])
+        plt.xlabel(feature[0])
+        plt.ylabel(feature[1])
         plt.plot()
         plt.show()
 
-    def test(self):  # predict and calculate testing accuracy
-        length = len(self.x_test_data)
-        mse = 0
-        accuracy = 0
-        for i in range(length):
-            # fetch data
-            x = self.x_test_data.values[i]
-            # activation function to calc y^
-            y = self.activation_func(x)
-            # fetch the real target
-            t = self.y_test_data.values[i]
-
-            if t == y:
-                accuracy += 1
-            else:
-                mse += np.square(t - y)
-
-        # calculate testing accuracy
-        mse /= length
-        accuracy = (accuracy/length)*100
-
-        print(f'Testing MSE: {mse}')
-        print(f'Testing accuracy: {accuracy:.2f}%')
+    # def predict(self):  # predict and calculate testing accuracy
+    #
+    #     for i in range(self.num_testing):
+    #         # fetch data
+    #         x = self.x_test_data[i, 0:self.features]
+    #
+    #         # activation function
+    #         y = self.activation_func(x)
+    #
+    #         # calculate error points
+    #         if y != self.y_test_data[i]:
+    #             self.error_points += 1
+    #
+    #     # calculate testing accuracy
+    #     testing_accuracy = 100 - ((self.error_points / self.num_testing) * 100)
+    #
+    #     print(f'Total samples tested: {self.num_testing}')
+    #     print(f'Total error points: {self.error_points}')
+    #     print(f'Testing accuracy: {testing_accuracy:.2f}%')
 
 
-features = [Features.bill_depth_mm, Features.flipper_length_mm]
-goals = [Species.Adelie, Species.Gentoo]
+feature = [X_Test.columns[0], X_Test.columns[1]]
+x_train_data = X_Train[X_Train.columns[[0, 1]]]
+x_test_data = X_Test[X_Test.columns[[0, 1]]]
+y_train_data = Y_Train.where(Y_Train > 0)
+y_test_data = Y_Test.where(Y_Test > 0)
 
-X_Train, Y_Train, X_Test, Y_Test = preprocess(features=features,
-                                              goals=goals,
-                                              dataset=dataset)
-
-# print(X_Train)
-# print(X_Test)
-# print(Y_Train)
-# print(Y_Test)
-
-per = Perceptron(features=features,
-                 goals=goals,
-                 x_train_data=X_Train,
-                 x_test_data=X_Test,
-                 y_train_data=Y_Train,
-                 y_test_data=Y_Test,
-                 eta=0.01,
-                 epochs=100,
-                 with_bias=False)
+print(y_test_data)
+per = Perceptron(features=feature, x_train_data=x_train_data, x_test_data=x_test_data,
+                 y_train_data=Y_Train, y_test_data=Y_Test, eta=0.1, epochs=1000, with_bias=True)
 per.train()
-per.test()
 per.plot()
