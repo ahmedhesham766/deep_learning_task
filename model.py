@@ -3,6 +3,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from enum import Enum
 
+
 dataset = pd.read_csv('penguins.csv')
 
 dataset[dataset.columns[0]] = pd.Categorical(
@@ -32,7 +33,7 @@ class Features(Enum):
 
 
 # preprocessing
-def preprocess(features: list[Features], goals: list[Species], dataset: pd.DataFrame):
+def preprocess(features, goals, dataset: pd.DataFrame):
     # print(features[0])
     # print(features[1])
     # print(goals[0])
@@ -102,7 +103,7 @@ class Perceptron:
 
     # initialize perceptron without bias
     def __init__(self, features, goals, epochs, x_train_data: pd.DataFrame, x_test_data: pd.DataFrame,
-                 y_train_data: pd.DataFrame, y_test_data: pd.DataFrame, eta, with_bias: bool):
+                 y_train_data: pd.DataFrame, y_test_data: pd.DataFrame, eta, with_bias):
 
         self.features = features  # input features
         self.goals = goals  # input classes
@@ -172,8 +173,8 @@ class Perceptron:
         # x1 = (- w0 - w2 * 230) / w1 -> x2 = 230
         # x2 = (- w0 - w1 * 13) / w2 -> x1 = 13
         w0, w1, w2 = self.weight[0], self.weight[1], self.weight[2]
-        print((-w0-w2*225)/w1)
-        print((-w0-w1*13)/w2)
+        # print((-w0-w2*225)/w1)
+        # print((-w0-w1*13)/w2)
         x1 = [(-w0-w2*230)/w1, 13]
         x2 = [230, (-w0-w1*13)/w2]
 
@@ -204,29 +205,25 @@ class Perceptron:
 
         print(f'Testing MSE: {mse}')
         print(f'Testing accuracy: {accuracy:.2f}%')
+        print('--------------------------------')
 
-
-features = [Features.bill_depth_mm, Features.flipper_length_mm]
-goals = [Species.Adelie, Species.Gentoo]
-
-X_Train, Y_Train, X_Test, Y_Test = preprocess(features=features,
-                                              goals=goals,
-                                              dataset=dataset)
-
-# print(X_Train)
-# print(X_Test)
-# print(Y_Train)
-# print(Y_Test)
-
-per = Perceptron(features=features,
-                 goals=goals,
-                 x_train_data=X_Train,
-                 x_test_data=X_Test,
-                 y_train_data=Y_Train,
-                 y_test_data=Y_Test,
-                 eta=0.01,
-                 epochs=100,
-                 with_bias=False)
-per.train()
-# per.test()
-per.plot()
+#
+# features = [Features.bill_depth_mm, Features.flipper_length_mm]
+# goals = [Species.Adelie, Species.Gentoo]
+#
+# X_Train, Y_Train, X_Test, Y_Test = preprocess(features=features,
+#                                               goals=goals,
+#                                               dataset=dataset)
+#
+# per = Perceptron(features=features,
+#                  goals=goals,
+#                  x_train_data=X_Train,
+#                  x_test_data=X_Test,
+#                  y_train_data=Y_Train,
+#                  y_test_data=Y_Test,
+#                  eta=0.01,
+#                  epochs=100,
+#                  with_bias=False)
+# per.train()
+# # per.test()
+# per.plot()
