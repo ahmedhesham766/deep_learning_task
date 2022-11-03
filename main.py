@@ -163,11 +163,22 @@ class Perceptron:
             else:
                 print('false')
         plt.figure('fig')
-        plt.scatter(c1[c1.columns[1]], c1[c1.columns[2]])
-        plt.scatter(c2[c2.columns[1]], c2[c2.columns[2]])
+        plt.scatter(c1[c1.columns[1]], c1[c1.columns[2]], color='grey')
+        plt.scatter(c2[c2.columns[1]], c2[c2.columns[2]], color='orange')
         plt.xlabel(c1.columns.values[1])
         plt.ylabel(c1.columns.values[2])
-        plt.plot()
+
+        # w0 + w1 * x1 + w2 * x2 = 0
+        # x1 = (- w0 - w2 * 230) / w1 -> x2 = 230
+        # x2 = (- w0 - w1 * 13) / w2 -> x1 = 13
+        w0, w1, w2 = self.weight[0], self.weight[1], self.weight[2]
+        print((-w0-w2*225)/w1)
+        print((-w0-w1*13)/w2)
+        x1 = [(-w0-w2*230)/w1, 13]
+        x2 = [230, (-w0-w1*13)/w2]
+
+        plt.plot(x1, x2, marker='o', color='purple')
+        # plt.plot()
         plt.show()
 
     def test(self):  # predict and calculate testing accuracy
@@ -217,5 +228,5 @@ per = Perceptron(features=features,
                  epochs=100,
                  with_bias=False)
 per.train()
-per.test()
+# per.test()
 per.plot()
