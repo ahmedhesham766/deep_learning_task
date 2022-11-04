@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 
 import model
 from model import Features
@@ -33,6 +34,15 @@ def get_eta():
 def get_epochs():
     epochs = int(epoch_txt.get())
     return epochs
+
+
+def data_entry_error():
+    if selected_feature1 == selected_feature2 or selected_class1 == selected_class2:
+        messagebox.showerror("Error", "Please make sure that the entered features and classes are different.")
+
+    if len(eta_txt.get()) == 0 or len(epoch_txt.get()) == 0 or selected_feature1 == '' or selected_feature2 == ''\
+            or selected_class1 == '' or selected_class2 == '':
+        messagebox.showerror("Error", "Missing data.")
 
 
 def func():
@@ -120,7 +130,7 @@ btn = Button(gui,
              fg='black',
              width=15,
              font=("Times New Roman", 14),
-             command=func)
+             command=lambda: [data_entry_error(), func()])
 btn.place(x=180, y=620)
 
 gui.mainloop()

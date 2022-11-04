@@ -148,19 +148,19 @@ class Perceptron:
         # print(f'Total epochs: {self.epochs}')
 
     def plot(self):
-        c1 = pd.DataFrame(columns=[self.x_train_data.columns])
-        c2 = pd.DataFrame(columns=[self.x_train_data.columns])
+        c1 = pd.DataFrame(columns=[self.x_test_data.columns])
+        c2 = pd.DataFrame(columns=[self.x_test_data.columns])
         min_x, max_x = float('inf'), float('-inf')
 
-        for i in range(len(self.y_train_data)):
-            x = self.x_train_data.iloc[i]
+        for i in range(len(self.y_test_data)):
+            x = self.x_test_data.iloc[i]
             if x[1] < min_x:
                 min_x = x[1]
             if x[1] > max_x:
                 max_x = x[1]
-            if self.y_train_data.values[i] == 1:
+            if self.y_test_data.values[i] == 1:
                 c1.loc[len(c1)] = [x[0], x[1], x[2]]
-            elif self.y_train_data.values[i] == -1:
+            elif self.y_test_data.values[i] == -1:
                 c2.loc[len(c2)] = [x[0], x[1], x[2]]
             else:
                 print('false')
