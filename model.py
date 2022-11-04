@@ -3,7 +3,6 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from enum import Enum
 
-
 dataset = pd.read_csv('penguins.csv')
 
 dataset[dataset.columns[0]] = pd.Categorical(
@@ -109,7 +108,7 @@ class Perceptron:
         self.goals = goals  # input classes
         self.epochs = epochs  # number of epochs
         self.eta = eta  # learning rate
-        self.weight = np.zeros(len(features) + 1)
+        self.weight = np.random.rand(len(features) + 1)
         x0 = pd.DataFrame(np.zeros(len(x_train_data)), columns=['bias'])
         self.x_train_data = pd.concat([x0, x_train_data], axis=1)
         x0 = pd.DataFrame(np.zeros(len(x_test_data)), columns=['bias'])
@@ -154,9 +153,13 @@ class Perceptron:
     def plot(self):
         c1 = pd.DataFrame(columns=[self.x_train_data.columns])
         c2 = pd.DataFrame(columns=[self.x_train_data.columns])
-
+        min_x, max_x = float('inf'), float('-inf')
         for i in range(len(self.y_train_data)):
             x = self.x_train_data.iloc[i]
+            if x[1] < min_x:
+                min_x = x[1]
+            if x[1] > max_x:
+                max_x = x[1]
             if self.y_train_data.values[i] == 1:
                 c1.loc[len(c1)] = [x[0], x[1], x[2]]
             elif self.y_train_data.values[i] == -1:
@@ -169,16 +172,14 @@ class Perceptron:
         plt.xlabel(c1.columns.values[1])
         plt.ylabel(c1.columns.values[2])
 
-        # w0 + w1 * x1 + w2 * x2 = 0
-        # x1 = (- w0 - w2 * 230) / w1 -> x2 = 230
+        # w0 + w1 * x1 + w2 * x2 = 0 , x1 is x, x2 is y
         # x2 = (- w0 - w1 * 13) / w2 -> x1 = 13
-        w0, w1, w2 = self.weight[0], self.weight[1], self.weight[2]
-        # print((-w0-w2*225)/w1)
-        # print((-w0-w1*13)/w2)
-        x1 = [(-w0-w2*230)/w1, 13]
-        x2 = [230, (-w0-w1*13)/w2]
 
-        plt.plot(x1, x2, marker='o', color='purple')
+        w0, w1, w2 = self.weight[0], self.weight[1], self.weight[2]
+        x = [min_x, max_x]
+        y = [(-w0-w1*min_x)/w2, (-w0-w1*max_x)/w2]
+
+        plt.plot(x, y, marker='o', color='purple')
         # plt.plot()
         plt.show()
 
@@ -201,7 +202,7 @@ class Perceptron:
 
         # calculate testing accuracy
         mse /= length
-        accuracy = (accuracy/length)*100
+        accuracy = (accuracy / length) * 100
 
         print(f'Testing MSE: {mse}')
         print(f'Testing accuracy: {accuracy:.2f}%')
