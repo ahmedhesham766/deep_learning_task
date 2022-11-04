@@ -5,16 +5,12 @@ from enum import Enum
 
 dataset = pd.read_csv('penguins.csv')
 
-dataset[dataset.columns[0]] = pd.Categorical(
-    dataset[dataset.columns[0]],
-    categories=['Adelie', 'Gentoo', 'Chinstrap']
-).codes
+dataset[dataset.columns[0]] = pd.Categorical(dataset[dataset.columns[0]],
+                                             categories=['Adelie', 'Gentoo', 'Chinstrap']).codes
 
 dataset[dataset.columns[4]].fillna(inplace=True, value='unknown')
-dataset[dataset.columns[4]] = pd.Categorical(
-    dataset[dataset.columns[4]],
-    categories=['unknown', 'male', 'female']
-).codes
+dataset[dataset.columns[4]] = pd.Categorical(dataset[dataset.columns[4]],
+                                             categories=['unknown', 'male', 'female']).codes
 
 
 class Species(Enum):
@@ -31,7 +27,7 @@ class Features(Enum):
     body_mass_g = 5
 
 
-# preprocessing
+############## Preprocessing ##############
 def preprocess(features, goals, dataset: pd.DataFrame):
     # print(features[0])
     # print(features[1])
@@ -41,7 +37,6 @@ def preprocess(features, goals, dataset: pd.DataFrame):
             features[0].name: dataset[features[0].name].values,
             features[1].name: dataset[features[1].name].values}
     data = pd.DataFrame(data=data)
-    # print(data)
 
     y1 = goals[0].value * 50  # the start index of y1
     y2 = goals[1].value * 50  # the start index of y1
@@ -122,7 +117,7 @@ class Perceptron:
         self.y_train_data = y_train_data
         self.y_test_data = y_test_data
 
-    def activation_func(self, x):
+    def activation_func_signum(self, x):
         y = np.transpose(self.weight).dot(x)
 
         if y < 0:
@@ -133,12 +128,14 @@ class Perceptron:
     def train(self):  # learn through the number of training samples
         for j in range(self.epochs):
             for i in range(len(self.x_train_data)):
+                # fetch data
                 x = self.x_train_data.values[i]
-                y = self.activation_func(x)
+                y = self.activation_func_signum(x)
                 t = self.y_train_data.values[i]
 
                 # calculate difference
                 loss = t - y
+
                 # new weight = old weight + (np.transpose(x).dot(loss).dot(self.eta))
                 self.weight = self.weight + np.transpose(x) * loss * self.eta
             # print('epoch ' + str(j) + ', fails = ' + str(fails))
@@ -151,21 +148,23 @@ class Perceptron:
         # print(f'Total epochs: {self.epochs}')
 
     def plot(self):
-        c1 = pd.DataFrame(columns=[self.x_train_data.columns])
-        c2 = pd.DataFrame(columns=[self.x_train_data.columns])
+        c1 = pd.DataFrame(columns=[self.x_test_data.columns])
+        c2 = pd.DataFrame(columns=[self.x_test_data.columns])
         min_x, max_x = float('inf'), float('-inf')
-        for i in range(len(self.y_train_data)):
-            x = self.x_train_data.iloc[i]
+
+        for i in range(len(self.y_test_data)):
+            x = self.x_test_data.iloc[i]
             if x[1] < min_x:
                 min_x = x[1]
             if x[1] > max_x:
                 max_x = x[1]
-            if self.y_train_data.values[i] == 1:
+            if self.y_test_data.values[i] == 1:
                 c1.loc[len(c1)] = [x[0], x[1], x[2]]
-            elif self.y_train_data.values[i] == -1:
+            elif self.y_test_data.values[i] == -1:
                 c2.loc[len(c2)] = [x[0], x[1], x[2]]
             else:
                 print('false')
+
         plt.figure('fig')
         plt.scatter(c1[c1.columns[1]], c1[c1.columns[2]], color='grey')
         plt.scatter(c2[c2.columns[1]], c2[c2.columns[2]], color='orange')
@@ -177,7 +176,7 @@ class Perceptron:
 
         w0, w1, w2 = self.weight[0], self.weight[1], self.weight[2]
         x = [min_x, max_x]
-        y = [(-w0-w1*min_x)/w2, (-w0-w1*max_x)/w2]
+        y = [(-w0 - w1 * min_x) / w2, (-w0 - w1 * max_x) / w2]
 
         plt.plot(x, y, marker='o', color='purple')
         # plt.plot()
@@ -191,7 +190,7 @@ class Perceptron:
             # fetch data
             x = self.x_test_data.values[i]
             # activation function to calc y^
-            y = self.activation_func(x)
+            y = self.activation_func_signum(x)
             # fetch the real target
             t = self.y_test_data.values[i]
 
@@ -207,24 +206,3 @@ class Perceptron:
         print(f'Testing MSE: {mse}')
         print(f'Testing accuracy: {accuracy:.2f}%')
         print('--------------------------------')
-
-#
-# features = [Features.bill_depth_mm, Features.flipper_length_mm]
-# goals = [Species.Adelie, Species.Gentoo]
-#
-# X_Train, Y_Train, X_Test, Y_Test = preprocess(features=features,
-#                                               goals=goals,
-#                                               dataset=dataset)
-#
-# per = Perceptron(features=features,
-#                  goals=goals,
-#                  x_train_data=X_Train,
-#                  x_test_data=X_Test,
-#                  y_train_data=Y_Train,
-#                  y_test_data=Y_Test,
-#                  eta=0.01,
-#                  epochs=100,
-#                  with_bias=False)
-# per.train()
-# # per.test()
-# per.plot()
