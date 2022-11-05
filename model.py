@@ -8,9 +8,59 @@ dataset = pd.read_csv('penguins.csv')
 dataset[dataset.columns[0]] = pd.Categorical(dataset[dataset.columns[0]],
                                              categories=['Adelie', 'Gentoo', 'Chinstrap']).codes
 
+dataset[dataset.columns[1]].fillna(inplace=True, value=dataset[dataset.columns[1]].mean())
+dataset[dataset.columns[2]].fillna(inplace=True, value=dataset[dataset.columns[2]].mean())
+dataset[dataset.columns[3]].fillna(inplace=True, value=dataset[dataset.columns[3]].mean())
+
 dataset[dataset.columns[4]].fillna(inplace=True, value='unknown')
 dataset[dataset.columns[4]] = pd.Categorical(dataset[dataset.columns[4]],
                                              categories=['unknown', 'male', 'female']).codes
+
+dataset[dataset.columns[5]].fillna(inplace=True, value=dataset[dataset.columns[5]].mean())
+
+
+def plot_all_data():
+    c1 = pd.DataFrame(columns=[dataset.columns[1:6]])
+    c2 = pd.DataFrame(columns=[dataset.columns[1:6]])
+    c3 = pd.DataFrame(columns=[dataset.columns[1:6]])
+
+    for i in range(len(dataset)):
+        y = dataset.iloc[i]
+        if y[0] == 0:
+            c1.loc[len(c1)] = [y[1], y[2], y[3], y[4], y[5]]
+        elif y[0] == 1:
+            c2.loc[len(c2)] = [y[1], y[2], y[3], y[4], y[5]]
+        elif y[0] == 2:
+            c3.loc[len(c3)] = [y[1], y[2], y[3], y[4], y[5]]
+        else:
+            print('false')
+    figure, axis = plt.subplots(nrows=3, ncols=4, squeeze=True)
+    x, y = 0, 0
+    for i in range(4):
+        for j in range(i+1, 5):
+            axis[x, y].set_title(f"{c1.columns.values[i]}  X  {c1.columns.values[j]}")
+            axis[x, y].scatter(c1[c1.columns[i]], c1[c1.columns[j]], color='red')
+            axis[x, y].scatter(c2[c2.columns[i]], c2[c2.columns[j]], color='orange')
+            axis[x, y].scatter(c3[c3.columns[i]], c3[c3.columns[j]], color='blue')
+            figure.suptitle("All Features Plot")
+            # axis[x, y].xlabel(c1.columns.values[i])
+            # axis[x, y].ylabel(c1.columns.values[j])
+            y += 1
+            if y == 4:
+                x += 1
+                y = 0
+    plt.show()
+    # plt.figure('fig')
+    # plt.scatter(c1[c1.columns[0]], c1[c1.columns[1]], color='red')
+    # plt.scatter(c2[c2.columns[0]], c2[c2.columns[1]], color='orange')
+    # plt.scatter(c3[c3.columns[0]], c3[c3.columns[1]], color='blue')
+    # plt.xlabel(c1.columns.values[0])
+    # plt.ylabel(c1.columns.values[1])
+
+    # plt.plot()
+
+
+plot_all_data()
 
 
 class Species(Enum):
@@ -62,12 +112,8 @@ def preprocess(features, goals, dataset: pd.DataFrame):
     del data
     # print(type1, '\n-----------------------------\n', type2)
 
-    type1[type1.columns[1]].fillna(inplace=True, value=type1[type1.columns[1]].mean())
-    type1[type1.columns[2]].fillna(inplace=True, value=type1[type1.columns[2]].mean())
     type1['species'] = 1
 
-    type2[type2.columns[1]].fillna(inplace=True, value=type2[type2.columns[1]].mean())
-    type2[type2.columns[2]].fillna(inplace=True, value=type2[type2.columns[2]].mean())
     type2['species'] = -1
 
     # print(type1, '\n--------------\n', type2)
@@ -227,7 +273,7 @@ class Perceptron:
         print(f'Positive:\t{fn}\t|\t{tp}')
         print('--------------------------------')
 
-#
+
 # features = [Features.bill_depth_mm, Features.bill_length_mm]
 # goals = [Species.Adelie, Species.Gentoo]
 #
