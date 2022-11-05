@@ -27,7 +27,7 @@ class Features(Enum):
     body_mass_g = 5
 
 
-############## Preprocessing ##############
+# Preprocessing #
 def preprocess(features, goals, dataset: pd.DataFrame):
     # print(features[0])
     # print(features[1])
@@ -186,6 +186,10 @@ class Perceptron:
         length = len(self.x_test_data)
         mse = 0
         accuracy = 0
+        tp = 0
+        tn = 0
+        fp = 0
+        fn = 0
         for i in range(length):
             # fetch data
             x = self.x_test_data.values[i]
@@ -196,13 +200,49 @@ class Perceptron:
 
             if t == y:
                 accuracy += 1
+                if y == 1:
+                    tp += 1
+                else:
+                    tn += 1
             else:
                 mse += np.square(t - y)
+                if y == 1:
+                    fp += 1
+                else:
+                    fn += 1
 
         # calculate testing accuracy
         mse /= length
         accuracy = (accuracy / length) * 100
+        precision = tp / (tp + fp)
+        recall = tp / (tp + fn)
 
         print(f'Testing MSE: {mse}')
-        print(f'Testing accuracy: {accuracy:.2f}%')
+        print(f'Testing Accuracy: {accuracy:.2f}%')
+        print(f'Testing Precision: {precision}')
+        print(f'Testing Recall: {recall:.2f}%')
+        print(f'Confusion Matrix:')
+        print(f'\tNegative\t|\tPositive\t')
+        print(f'Negative:\t{tn}\t|\t{fp}\t')
+        print(f'Positive:\t{fn}\t|\t{tp}')
         print('--------------------------------')
+
+#
+# features = [Features.bill_depth_mm, Features.bill_length_mm]
+# goals = [Species.Adelie, Species.Gentoo]
+#
+# x_train, y_train, x_test, y_test = preprocess(features=features, goals=goals, dataset=dataset)
+#
+# per = Perceptron(features=features,
+#                  goals=goals,
+#                  x_train_data=x_train,
+#                  x_test_data=x_test,
+#                  y_train_data=y_train,
+#                  y_test_data=y_test,
+#                  eta=0.1,
+#                  epochs=100,
+#                  with_bias=True)
+#
+# per.train()
+# per.test()
+# per.plot()
