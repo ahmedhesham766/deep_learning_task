@@ -34,21 +34,27 @@ def plot_all_data():
             c3.loc[len(c3)] = [y[1], y[2], y[3], y[4], y[5]]
         else:
             print('false')
-    figure, axis = plt.subplots(nrows=3, ncols=4, squeeze=True)
-    x, y = 0, 0
+    # figure, axis = plt.subplots(nrows=3, ncols=4, squeeze=True)
+    # x, y = 0, 0
     for i in range(4):
         for j in range(i+1, 5):
-            axis[x, y].set_title(f"{c1.columns.values[i]}  X  {c1.columns.values[j]}")
-            axis[x, y].scatter(c1[c1.columns[i]], c1[c1.columns[j]], color='red')
-            axis[x, y].scatter(c2[c2.columns[i]], c2[c2.columns[j]], color='orange')
-            axis[x, y].scatter(c3[c3.columns[i]], c3[c3.columns[j]], color='blue')
-            figure.suptitle("All Features Plot")
-            # axis[x, y].xlabel(c1.columns.values[i])
-            # axis[x, y].ylabel(c1.columns.values[j])
-            y += 1
-            if y == 4:
-                x += 1
-                y = 0
+            plt.figure(f"{c1.columns.values[i]}  X  {c1.columns.values[j]}")
+            plt.scatter(c1[c1.columns[i]], c1[c1.columns[j]], color='red')
+            plt.scatter(c2[c2.columns[i]], c2[c2.columns[j]], color='green')
+            plt.scatter(c3[c3.columns[i]], c3[c3.columns[j]], color='blue')
+            plt.xlabel(c1.columns.values[i])
+            plt.ylabel(c1.columns.values[j])
+        #     axis[x, y].set_title(f"{c1.columns.values[i]}  X  {c1.columns.values[j]}")
+        #     axis[x, y].scatter(c1[c1.columns[i]], c1[c1.columns[j]], color='red')
+        #     axis[x, y].scatter(c2[c2.columns[i]], c2[c2.columns[j]], color='orange')
+        #     axis[x, y].scatter(c3[c3.columns[i]], c3[c3.columns[j]], color='blue')
+        #     figure.suptitle("All Features Plot")
+        #     # axis[x, y].xlabel(c1.columns.values[i])
+        #     # axis[x, y].ylabel(c1.columns.values[j])
+        #     y += 1
+        #     if y == 4:
+        #         x += 1
+        #         y = 0
     plt.show()
     # plt.figure('fig')
     # plt.scatter(c1[c1.columns[0]], c1[c1.columns[1]], color='red')
@@ -78,7 +84,7 @@ class Features(Enum):
 
 
 # Preprocessing #
-def preprocess(features, goals, dataset: pd.DataFrame):
+def train_test_split(features, goals, dataset: pd.DataFrame):
     # print(features[0])
     # print(features[1])
     # print(goals[0])
@@ -211,7 +217,7 @@ class Perceptron:
             else:
                 print('false')
 
-        plt.figure('fig')
+        plt.figure('test figure')
         plt.scatter(c1[c1.columns[1]], c1[c1.columns[2]], color='grey')
         plt.scatter(c2[c2.columns[1]], c2[c2.columns[2]], color='orange')
         plt.xlabel(c1.columns.values[1])

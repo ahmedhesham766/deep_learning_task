@@ -7,7 +7,7 @@ import model
 from model import Features
 from model import Species
 from model import Perceptron
-from model import preprocess
+from model import train_test_split
 
 
 def feature_1_changed(event):
@@ -46,7 +46,7 @@ def data_entry_error():
 
 
 def func():
-    x_train, y_train, x_test, y_test = preprocess(features=features, goals=goals, dataset=model.dataset)
+    x_train, y_train, x_test, y_test = train_test_split(features=features, goals=goals, dataset=model.dataset)
 
     per = Perceptron(features=features,
                      goals=goals,
