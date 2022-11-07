@@ -258,13 +258,14 @@ class Perceptron:
         accuracy = (accuracy / length) * 100
         if tp + fp != 0:
             precision = tp / (tp + fp)
+            recall = tp / (tp + fn)
         else:
             precision = 0
-        recall = tp / (tp + fn)
+            recall = 0
 
         print(f'Testing MSE: {mse}')
         print(f'Testing Accuracy: {accuracy:.2f}%')
-        print(f'Testing Precision: {precision}')
+        print(f'Testing Precision: {precision:.2f}%')
         print(f'Testing Recall: {recall:.2f}%')
         print(f'Confusion Matrix:')
         print(f'\tNegative\t|\tPositive\t')
