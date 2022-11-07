@@ -20,30 +20,20 @@ dataset[dataset.columns[5]].fillna(inplace=True, value=dataset[dataset.columns[5
 
 
 def plot_all_data():
-    c1 = pd.DataFrame(columns=[dataset.columns[1:6]])
-    c2 = pd.DataFrame(columns=[dataset.columns[1:6]])
-    c3 = pd.DataFrame(columns=[dataset.columns[1:6]])
+    c1 = dataset[0:50]
+    c2 = dataset[50:100]
+    c3 = dataset[100:150]
 
-    for i in range(len(dataset)):
-        y = dataset.iloc[i]
-        if y[0] == 0:
-            c1.loc[len(c1)] = [y[1], y[2], y[3], y[4], y[5]]
-        elif y[0] == 1:
-            c2.loc[len(c2)] = [y[1], y[2], y[3], y[4], y[5]]
-        elif y[0] == 2:
-            c3.loc[len(c3)] = [y[1], y[2], y[3], y[4], y[5]]
-        else:
-            print('false')
     # figure, axis = plt.subplots(nrows=3, ncols=4, squeeze=True)
     # x, y = 0, 0
     for i in range(4):
         for j in range(i+1, 5):
-            plt.figure(f"{c1.columns.values[i]}  X  {c1.columns.values[j]}")
-            plt.scatter(c1[c1.columns[i]], c1[c1.columns[j]], color='red')
-            plt.scatter(c2[c2.columns[i]], c2[c2.columns[j]], color='green')
-            plt.scatter(c3[c3.columns[i]], c3[c3.columns[j]], color='blue')
-            plt.xlabel(c1.columns.values[i])
-            plt.ylabel(c1.columns.values[j])
+            plt.figure(f"{c1.columns.values[i+1]}  X  {c1.columns.values[j+1]}")
+            plt.scatter(c1[c1.columns[i+1]], c1[c1.columns[j+1]], color='red')
+            plt.scatter(c2[c2.columns[i+1]], c2[c2.columns[j+1]], color='green')
+            plt.scatter(c3[c3.columns[i+1]], c3[c3.columns[j+1]], color='blue')
+            plt.xlabel(c1.columns.values[i+1])
+            plt.ylabel(c1.columns.values[j+1])
         #     axis[x, y].set_title(f"{c1.columns.values[i]}  X  {c1.columns.values[j]}")
         #     axis[x, y].scatter(c1[c1.columns[i]], c1[c1.columns[j]], color='red')
         #     axis[x, y].scatter(c2[c2.columns[i]], c2[c2.columns[j]], color='orange')
@@ -266,7 +256,10 @@ class Perceptron:
         # calculate testing accuracy
         mse /= length
         accuracy = (accuracy / length) * 100
-        precision = tp / (tp + fp)
+        if tp + fp != 0:
+            precision = tp / (tp + fp)
+        else:
+            precision = 0
         recall = tp / (tp + fn)
 
         print(f'Testing MSE: {mse}')
