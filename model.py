@@ -171,8 +171,7 @@ class Perceptron:
             return 1
           
      def activation_func_linear(self, x):
-        y = np.transpose(self.weight).dot(x)
-        return y
+        return np.transpose(self.weight).dot(x)
       
     def train(self):  # learn through the number of training samples
         for j in range(self.epochs):
