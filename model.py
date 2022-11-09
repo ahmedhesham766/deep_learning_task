@@ -167,14 +167,18 @@ class Perceptron:
             return -1
         else:
             return 1
-
+          
+     def activation_func_linear(self, x):
+        y = np.transpose(self.weight).dot(x)
+        return y
+      
     def train(self):  # learn through the number of training samples
         for j in range(self.epochs):
             mse = 0
             for i in range(len(self.x_train_data)):
                 # fetch data
                 x = self.x_train_data.values[i]
-                y = self.activation_func_signum(x)
+                y = self.activation_func_linear(x)
                 t = self.y_train_data.values[i]
 
                 # calculate difference
