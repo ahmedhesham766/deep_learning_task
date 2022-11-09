@@ -56,7 +56,7 @@ def plot_all_data():
     # plt.plot()
 
 
-plot_all_data()
+# plot_all_data()
 
 
 class Species(Enum):
@@ -139,8 +139,9 @@ class Perceptron:
 
     # initialize perceptron without bias
     def __init__(self, features, goals, epochs, x_train_data: pd.DataFrame, x_test_data: pd.DataFrame,
-                 y_train_data: pd.DataFrame, y_test_data: pd.DataFrame, eta, with_bias):
+                 y_train_data: pd.DataFrame, y_test_data: pd.DataFrame, eta, with_bias, threshold):
 
+        self.threshold = threshold
         self.features = features  # input features
         self.goals = goals  # input classes
         self.epochs = epochs  # number of epochs
@@ -169,6 +170,7 @@ class Perceptron:
 
     def train(self):  # learn through the number of training samples
         for j in range(self.epochs):
+            mse = 0
             for i in range(len(self.x_train_data)):
                 # fetch data
                 x = self.x_train_data.values[i]
@@ -177,9 +179,14 @@ class Perceptron:
 
                 # calculate difference
                 loss = t - y
-
+                mse += np.square(loss)
                 # new weight = old weight + (np.transpose(x).dot(loss).dot(self.eta))
                 self.weight = self.weight + np.transpose(x) * loss * self.eta
+            mse *= (1/len(self.x_train_data)) * (1/2)
+            if mse <= self.threshold:
+                print(f"The number of epochs taken to reach the threshold: {j}")
+                print(f"the mse = {mse:.2f}")
+                break
             # print('epoch ' + str(j) + ', fails = ' + str(fails))
             # # calculate mean squared error for each epoch
             # print('epoch ' + str(j) + ': MSE = ' + str(fails / len(self.x_train_data)))
@@ -254,7 +261,7 @@ class Perceptron:
                     fn += 1
 
         # calculate testing accuracy
-        mse /= length
+        mse *= (1/length) * (1/2)
         accuracy = (accuracy / length) * 100
         if tp + fp != 0:
             precision = tp / (tp + fp)
@@ -265,8 +272,8 @@ class Perceptron:
 
         print(f'Testing MSE: {mse}')
         print(f'Testing Accuracy: {accuracy:.2f}%')
-        print(f'Testing Precision: {precision:.2f}%')
-        print(f'Testing Recall: {recall:.2f}%')
+        print(f'Testing Precision: {precision*100:.2f}%')
+        print(f'Testing Recall: {recall*100:.2f}%')
         print(f'Confusion Matrix:')
         print(f'\tNegative\t|\tPositive\t')
         print(f'Negative:\t{tn}\t|\t{fp}\t')
@@ -274,21 +281,22 @@ class Perceptron:
         print('--------------------------------')
 
 
-# features = [Features.bill_depth_mm, Features.bill_length_mm]
-# goals = [Species.Adelie, Species.Gentoo]
-#
-# x_train, y_train, x_test, y_test = preprocess(features=features, goals=goals, dataset=dataset)
-#
-# per = Perceptron(features=features,
-#                  goals=goals,
-#                  x_train_data=x_train,
-#                  x_test_data=x_test,
-#                  y_train_data=y_train,
-#                  y_test_data=y_test,
-#                  eta=0.1,
-#                  epochs=100,
-#                  with_bias=True)
-#
+features = [Features.bill_depth_mm, Features.flipper_length_mm]
+goals = [Species.Adelie, Species.Gentoo]
+
+x_train, y_train, x_test, y_test = train_test_split(features=features, goals=goals, dataset=dataset)
+
+per = Perceptron(features=features,
+                 goals=goals,
+                 x_train_data=x_train,
+                 x_test_data=x_test,
+                 y_train_data=y_train,
+                 y_test_data=y_test,
+                 eta=0.1,
+                 epochs=10000,
+                 with_bias=True,
+                 threshold=0)
+
 # per.train()
 # per.test()
 # per.plot()
