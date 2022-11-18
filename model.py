@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from enum import Enum
 
 dataset = pd.read_csv('penguins.csv')
-
+# Preprocessing
 dataset[dataset.columns[0]] = pd.Categorical(dataset[dataset.columns[0]],
                                              categories=['Adelie', 'Gentoo', 'Chinstrap']).codes
 
@@ -18,7 +18,8 @@ dataset[dataset.columns[4]] = pd.Categorical(dataset[dataset.columns[4]],
                                              categories=['unknown', 'male', 'female']).codes
 
 dataset[dataset.columns[5]].fillna(inplace=True, value=dataset[dataset.columns[5]].mean())
-dataset = (dataset-dataset.min())/(dataset.max()-dataset.min())
+dataset = (dataset-dataset.min())/(dataset.max()-dataset.min())  # Normalization due to large values
+##########################
 
 
 def plot_all_data():
@@ -58,7 +59,7 @@ def plot_all_data():
     # plt.plot()
 
 
-# plot_all_data()
+plot_all_data()
 
 
 class Species(Enum):
@@ -192,7 +193,7 @@ class Perceptron:
             mse *= (1/len(self.x_train_data)) * (1/2)
             epochs += 1
             if mse <= self.threshold:
-                print(f"the mse = {mse:.2f}")
+                print(f"MSE reached threshold = {mse:.2f}")
                 break
 
             # print('epoch ' + str(j) + ', fails = ' + str(fails))
@@ -279,14 +280,16 @@ class Perceptron:
             precision = 0
             recall = 0
 
+        print('--------------------------------')
         print(f'Testing MSE: {mse}')
         print(f'Testing Accuracy: {accuracy:.2f}%')
         print(f'Testing Precision: {precision*100:.2f}%')
         print(f'Testing Recall: {recall*100:.2f}%')
+        print('--------------------------------')
         print(f'Confusion Matrix:')
-        print(f'\tNegative\t|\tPositive\t')
-        print(f'Negative:\t{tn}\t|\t{fp}\t')
-        print(f'Positive:\t{fn}\t|\t{tp}')
+        print(f'\t\t\tNegative\t|\tPositive\t')
+        print(f'Negative:\t\t{tn}\t\t|\t{fp}\t')
+        print(f'Positive:\t\t{fn}\t\t|\t{tp}')
         print('--------------------------------')
 
 

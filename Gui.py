@@ -71,10 +71,10 @@ def func():
 
 gui = Tk()
 gui.title('Task_1 GUI')
-gui.geometry('590x790+550+60')
+gui.geometry('540x750+550+60')
 
 Title = Label(gui, text="User Input", fg='black', font=("Times New Roman", 20))
-Title.place(x=180, y=30)
+Title.place(x=210, y=40)
 
 feature1_label = Label(gui, text="Select first feature", fg='black', font=("Times New Roman", 14))
 feature1_label.place(x=50, y=130)
@@ -143,6 +143,6 @@ btn = Button(gui,
              width=15,
              font=("Times New Roman", 14),
              command=lambda: [data_entry_error(), func()])
-btn.place(x=180, y=690)
+btn.place(x=200, y=675)
 
 gui.mainloop()
