@@ -174,6 +174,7 @@ class Perceptron:
         return np.transpose(self.weight).dot(x)
       
     def train(self):  # learn through the number of training samples
+        epochs = 0
         for j in range(self.epochs):
             mse = 0
             for i in range(len(self.x_train_data)):
@@ -187,14 +188,17 @@ class Perceptron:
                 mse += np.square(loss)
                 # new weight = old weight + (np.transpose(x).dot(loss).dot(self.eta))
                 self.weight = self.weight + np.transpose(x) * loss * self.eta
+
             mse *= (1/len(self.x_train_data)) * (1/2)
+            epochs += 1
             if mse <= self.threshold:
-                print(f"The number of epochs taken to reach the threshold: {j}")
                 print(f"the mse = {mse:.2f}")
                 break
+
             # print('epoch ' + str(j) + ', fails = ' + str(fails))
             # # calculate mean squared error for each epoch
             # print('epoch ' + str(j) + ': MSE = ' + str(fails / len(self.x_train_data)))
+        print(f"The number of epochs taken: {epochs}")
 
         # training_accuracy = 100 - ((self.lost[self.num_training - 1] / self.num_training) * 100)
         # print(f'Total samples trained: {self.num_training}')
@@ -298,10 +302,10 @@ class Perceptron:
 #                  y_train_data=y_train,
 #                  y_test_data=y_test,
 #                  eta=0.1,
-#                  epochs=10,
+#                  epochs=100,
 #                  with_bias=True,
-#                  threshold=0)
-
+#                  threshold=0.05)
+#
 # per.train()
 # per.test()
 # per.plot()
