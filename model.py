@@ -9,6 +9,7 @@ dataset[dataset.columns[0]] = pd.Categorical(dataset[dataset.columns[0]],
                                              categories=['Adelie', 'Gentoo', 'Chinstrap']).codes
 
 dataset[dataset.columns[1]].fillna(inplace=True, value=dataset[dataset.columns[1]].mean())
+
 dataset[dataset.columns[2]].fillna(inplace=True, value=dataset[dataset.columns[2]].mean())
 dataset[dataset.columns[3]].fillna(inplace=True, value=dataset[dataset.columns[3]].mean())
 
@@ -17,6 +18,7 @@ dataset[dataset.columns[4]] = pd.Categorical(dataset[dataset.columns[4]],
                                              categories=['unknown', 'male', 'female']).codes
 
 dataset[dataset.columns[5]].fillna(inplace=True, value=dataset[dataset.columns[5]].mean())
+dataset = (dataset-dataset.min())/(dataset.max()-dataset.min())
 
 
 def plot_all_data():
@@ -55,10 +57,8 @@ def plot_all_data():
 
     # plt.plot()
 
-    
 
 # plot_all_data()
-
 
 
 class Species(Enum):
@@ -169,8 +169,8 @@ class Perceptron:
             return -1
         else:
             return 1
-          
-     def activation_func_linear(self, x):
+
+    def activation_func_linear(self, x):
         return np.transpose(self.weight).dot(x)
       
     def train(self):  # learn through the number of training samples
@@ -286,21 +286,21 @@ class Perceptron:
         print('--------------------------------')
 
 
-features = [Features.bill_depth_mm, Features.flipper_length_mm]
-goals = [Species.Adelie, Species.Gentoo]
+# features = [Features.bill_depth_mm, Features.flipper_length_mm]
+# goals = [Species.Adelie, Species.Gentoo]
 
-x_train, y_train, x_test, y_test = train_test_split(features=features, goals=goals, dataset=dataset)
+# x_train, y_train, x_test, y_test = train_test_split(features=features, goals=goals, dataset=dataset)
 
-per = Perceptron(features=features,
-                 goals=goals,
-                 x_train_data=x_train,
-                 x_test_data=x_test,
-                 y_train_data=y_train,
-                 y_test_data=y_test,
-                 eta=0.1,
-                 epochs=10000,
-                 with_bias=True,
-                 threshold=0)
+# per = Perceptron(features=features,
+#                  goals=goals,
+#                  x_train_data=x_train,
+#                  x_test_data=x_test,
+#                  y_train_data=y_train,
+#                  y_test_data=y_test,
+#                  eta=0.1,
+#                  epochs=10,
+#                  with_bias=True,
+#                  threshold=0)
 
 # per.train()
 # per.test()
